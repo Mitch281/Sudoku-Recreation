@@ -6,6 +6,7 @@ SCREEN_WIDTH = 540
 SCREEN_LENGTH = 540
 NUM_ROWS = 9
 NUM_COLUMNS = 9
+INCREMENT = int(SCREEN_LENGTH / NUM_ROWS)
 font = pygame.font.SysFont("monospace", 15)
 
 board = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -45,8 +46,7 @@ class Screen():
         self.puzzle = puzzle
 
     def set_rows_and_columns(self):
-        increment = int(SCREEN_LENGTH / NUM_ROWS)
-        for i in range(0, SCREEN_LENGTH + 1, increment):
+        for i in range(0, SCREEN_LENGTH + 1, INCREMENT):
             self.rows.append(i)
             self.columns.append(i)
 
@@ -67,8 +67,8 @@ class Screen():
             for j in range(len(self.puzzle.board)):
                 if 1 <= self.puzzle.board[i][j] <= 9:
                     if type(self.window) == pygame.Surface:
-                        x_pos = (j + 1) * 60
-                        y_pos = (i + 1) * 60
+                        x_pos = j * 60
+                        y_pos = i * 60
                         number = font.render(str(self.puzzle.board[i][j]), 1, BLACK)
                         self.window.blit(number, (x_pos, y_pos))
 
@@ -88,8 +88,27 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                click_pos = pygame.mouse.get_pos()
+
+                # A click that is not on a line
+                if (click_pos[0] % 60 != 0) and (click_pos[1] % 60 != 0):
+                    # The index of the board to be updated.
+                    index = (click_pos[1] // INCREMENT, click_pos[0] // INCREMENT)
+
+                    # Checks that a move has not been made there already.
+                    if puzzle.board[index[0]][index[1]] == 0:
+                        screen.focused = True
+
+            if event.type == pygame.KEYDOWN:
+                # Checks if the key pressed is a number.
+                if 49 <= event.key <= 57:
+                    key_pressed = event.key - 48
+                    if screen.focused:
+                        if 1 <= key_pressed <= 9:
+                            puzzle.make_move(index, key_pressed)
+                            screen.focused = False
 
         pygame.display.update()
-
 
 main()
