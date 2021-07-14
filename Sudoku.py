@@ -2,11 +2,13 @@ import pygame
 
 pygame.init()
 
+# Constants to do with GUI
 SCREEN_WIDTH = 540
 SCREEN_LENGTH = 540
 NUM_ROWS = 9
 NUM_COLUMNS = 9
 INCREMENT = int(SCREEN_LENGTH / NUM_ROWS)
+
 font = pygame.font.SysFont("monospace", 50)
 
 board = [[8, 2, 7, 1, 5, 4, 3, 9, 0],
@@ -19,8 +21,10 @@ board = [[8, 2, 7, 1, 5, 4, 3, 9, 0],
          [1, 5, 4, 7, 9, 6, 8, 2, 3],
          [2, 3, 9, 8, 4, 1, 5, 6, 0]]
 
+# Colours
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+GREEN = (106, 226, 63)
 
 
 # Handles the actual puzzle
@@ -60,6 +64,7 @@ class Puzzle():
         else:
             return False
 
+
 # Handles GUI
 class Screen():
     def __init__(self, window, caption, rows, columns, focused, puzzle):
@@ -96,6 +101,18 @@ class Screen():
                         y_pos = (i * 60 + (i * 60 + 2)) / 2
                         number = font.render(str(self.puzzle.board[i][j]), 1, BLACK)
                         self.window.blit(number, (x_pos, y_pos))
+
+    # Highlights the box that is currently in focus in green.
+    def highlight_box(self, click_position):
+        x_pos = click_position[0]
+        y_pos = click_position[1]
+        x_remainder = x_pos % INCREMENT
+        y_remainder = y_pos % INCREMENT
+        left_line = x_pos - x_remainder
+        top_line = y_pos - y_remainder
+        if type(self.window) == pygame.Surface:
+            pygame.draw.rect(self.window, GREEN, (left_line, top_line, INCREMENT, INCREMENT))
+
 
 
 puzzle = Puzzle(board)
@@ -134,6 +151,10 @@ def main():
                             puzzle.make_move(index, key_pressed)
                             screen.focused = False
 
+        if screen.focused:
+            screen.highlight_box(click_pos)
+
+        # Check if the puzzle has successfully been solved.
         if puzzle.check_successful():
             running = False
 
