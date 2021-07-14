@@ -7,17 +7,17 @@ SCREEN_LENGTH = 540
 NUM_ROWS = 9
 NUM_COLUMNS = 9
 INCREMENT = int(SCREEN_LENGTH / NUM_ROWS)
-font = pygame.font.SysFont("monospace", 15)
+font = pygame.font.SysFont("monospace", 50)
 
-board = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 3, 0, 0, 0],
-         [0, 0, 0, 0, 0, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 0, 0, 0, 0],
-         [0, 2, 0, 0, 0, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 0, 8, 0, 0],
-         [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+board = [[8, 2, 7, 1, 5, 4, 3, 9, 0],
+         [9, 6, 5, 3, 2, 7, 1, 4, 8],
+         [3, 4, 1, 6, 8, 9, 7, 5, 2],
+         [5, 9, 3, 4, 6, 8, 2, 7, 1],
+         [4, 7, 2, 5, 1, 3, 6, 8, 9],
+         [6, 1, 8, 9, 7, 2, 4, 3, 5],
+         [7, 8, 6, 2, 3, 5, 9, 1, 4],
+         [1, 5, 4, 7, 9, 6, 8, 2, 3],
+         [2, 3, 9, 8, 4, 1, 5, 6, 0]]
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -34,6 +34,31 @@ class Puzzle():
         if 1 <= number <= 9:
             board[x_coord][y_coord] = number
 
+    def check_rows(self, board):
+        row_number = 0
+        for row in board:
+            row_number += 1
+            distinct_numbers = set(row)
+
+            # This means that not all spaces have been entered yet and thus, the game cannot be completed.
+            if 0 in distinct_numbers:
+                return False
+            # In other words, not all the numbers in thr row are distinct.
+            elif len(row) > len(distinct_numbers):
+                return False
+
+        if row_number == 9:
+            return True
+
+    def check_columns(self):
+        transposed_board = [[row[i] for row in board] for i in range(len(board[0]))]
+        self.check_rows(transposed_board)
+
+    def check_successful(self):
+        if self.check_rows(board) and self.check_columns:
+            return True
+        else:
+            return False
 
 # Handles GUI
 class Screen():
@@ -67,8 +92,8 @@ class Screen():
             for j in range(len(self.puzzle.board)):
                 if 1 <= self.puzzle.board[i][j] <= 9:
                     if type(self.window) == pygame.Surface:
-                        x_pos = j * 60
-                        y_pos = i * 60
+                        x_pos = (j * 60 + (j * 60 + 2)) / 2
+                        y_pos = (i * 60 + (i * 60 + 2)) / 2
                         number = font.render(str(self.puzzle.board[i][j]), 1, BLACK)
                         self.window.blit(number, (x_pos, y_pos))
 
@@ -109,6 +134,10 @@ def main():
                             puzzle.make_move(index, key_pressed)
                             screen.focused = False
 
+        if puzzle.check_successful():
+            running = False
+
         pygame.display.update()
+
 
 main()
