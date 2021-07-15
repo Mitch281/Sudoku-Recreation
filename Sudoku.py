@@ -26,7 +26,6 @@ board = [[8, 2, 7, 1, 5, 4, 3, 9, 0],
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREEN = (106, 226, 63)
-print(pygame.font.get_fonts())
 
 
 # Handles the actual puzzle
@@ -56,6 +55,17 @@ class Puzzle():
         if row_number == 9:
             return True
 
+    def check_game_completed(self):
+        row_number = 0
+        for row in self.board:
+            if 0 in row:
+                return False
+            else:
+                row_number += 1
+
+        if row_number == 9:
+            return True
+
     def check_columns(self):
         transposed_board = [[row[i] for row in board] for i in range(len(board[0]))]
         self.check_rows(transposed_board)
@@ -65,20 +75,6 @@ class Puzzle():
             return True
         else:
             return False
-
-    # You lose when you have entered a number into every box, but it is wrong.
-    def check_lose(self):
-        if self.check_successful():
-            return False
-        elif not self.check_successful():
-            row_number = 0
-            for row in self.board:
-                if 0 in row:
-                    return False
-                else:
-                    row_number += 1
-        if row_number == 9:
-            return True
 
 
 # Handles GUI
@@ -129,8 +125,8 @@ class Screen():
         if type(self.window) == pygame.Surface:
             pygame.draw.rect(self.window, GREEN, (left_line, top_line, INCREMENT, INCREMENT))
 
-    def render_ending_message(self, successful):
-        if successful:
+    def render_ending_message(self):
+        if puzzle.check_successful():
             message = ending_font.render("Success!", 1, BLACK)
             self.window.blit(message, (50, 100))
         else:
@@ -153,7 +149,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if not puzzle.check_successful():
+            if not puzzle.check_game_completed():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     click_pos = pygame.mouse.get_pos()
 
@@ -174,17 +170,12 @@ def main():
                             if 1 <= key_pressed <= 9:
                                 puzzle.make_move(index, key_pressed)
                                 screen.focused = False
-        if not puzzle.check_successful():
-            if screen.focused:
-                screen.highlight_box(click_pos)
 
-        if puzzle.check_successful():
-            won = True
-            screen.render_ending_message(won)
+        if not puzzle.check_game_completed() and screen.focused:
+            screen.highlight_box(click_pos)
 
-        if puzzle.check_lose():
-            won = True
-            screen.render_ending_message(not won)
+        elif puzzle.check_game_completed():
+            screen.render_ending_message()
 
         pygame.display.update()
 
