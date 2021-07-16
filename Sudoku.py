@@ -6,12 +6,14 @@ pygame.init()
 # Constants to do with GUI
 SCREEN_WIDTH = 540
 SCREEN_LENGTH = 540
+BOTTOM_BIT = 60
 NUM_ROWS = 9
 NUM_COLUMNS = 9
 INCREMENT = int(SCREEN_LENGTH / NUM_ROWS)
 
 number_font = pygame.font.SysFont("twcencondensed", 50)
 ending_font = pygame.font.SysFont("twocencondensed", 100)
+instruction_font = pygame.font.SysFont("twocencondensed", 30)
 
 initial_board = [[8, 2, 7, 1, 0, 4, 3, 9, 0],
                  [9, 6, 5, 3, 2, 7, 1, 4, 8],
@@ -123,6 +125,12 @@ class Screen:
                 pygame.draw.line(self.window, BLACK, (self.columns[i], 0), (self.columns[i], SCREEN_LENGTH), thickness)
                 pygame.draw.line(self.window, BLACK, (0, self.columns[i]), (SCREEN_WIDTH, self.columns[i]), thickness)
 
+    def render_bottom_instructions(self):
+        instruction1 = instruction_font.render("Press enter to submit answer", False, BLACK)
+        instruction2 = instruction_font.render("Press spacebar to solve", False, BLACK)
+        self.window.blit(instruction1, (10, 540))
+        self.window.blit(instruction2, (10, 560))
+
     def render_numbers(self):
         for i in range(len(self.puzzle.board)):
             for j in range(len(self.puzzle.board)):
@@ -174,7 +182,7 @@ class Screen:
 
 
 puzzle = Puzzle(initial_board, board)
-screen = Screen(pygame.display.set_mode((SCREEN_WIDTH, SCREEN_LENGTH)),
+screen = Screen(pygame.display.set_mode((SCREEN_WIDTH, SCREEN_LENGTH + BOTTOM_BIT)),
                 pygame.display.set_caption("Sudoku"), [], [], False, puzzle)
 screen.set_rows_and_columns()
 
@@ -210,6 +218,8 @@ def main():
 
         elif puzzle.check_game_completed():
             screen.render_ending_message()
+
+        screen.render_bottom_instructions()
 
         pygame.display.update()
 
