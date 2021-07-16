@@ -11,7 +11,7 @@ NUM_COLUMNS = 9
 INCREMENT = int(SCREEN_LENGTH / NUM_ROWS)
 
 number_font = pygame.font.SysFont("twcencondensed", 50)
-ending_font = pygame.font.SysFont("magneto", 100)
+ending_font = pygame.font.SysFont("twocencondensed", 100)
 
 initial_board = [[8, 2, 7, 1, 0, 4, 3, 9, 0],
                  [9, 6, 5, 3, 2, 7, 1, 4, 8],
@@ -34,7 +34,7 @@ BLUE = (38, 44, 242)
 
 
 # Handles the actual puzzle
-class Puzzle():
+class Puzzle:
     def __init__(self, initial_board, board):
         self.initial_board = initial_board
         self.board = board
@@ -44,6 +44,12 @@ class Puzzle():
         y_coord = coordinate[1]
         if screen.focused and 1 <= number <= 9:
             board[x_coord][y_coord] = number
+
+    def delete_move(self, coordinate, number):
+        x_coord = coordinate[0]
+        y_coord = coordinate[1]
+        if screen.focused and 1 <= number <= 9:
+            board[x_coord][y_coord] = 0
 
     def check_rows(self, board):
         row_number = 0
@@ -82,9 +88,16 @@ class Puzzle():
         else:
             return False
 
+    # Checks if an entry of board was in the initial board.
+    def part_of_initial_board(self, index):
+        if self.initial_board[index[0]][index[1]] == 0:
+            return False
+        elif 1 <= self.initial_board[index[0]][index[1]] <= 9:
+            return True
+
 
 # Handles GUI
-class Screen():
+class Screen:
     def __init__(self, window, caption, rows, columns, focused, puzzle):
         self.window = window
         self.caption = caption
@@ -111,16 +124,16 @@ class Screen():
                 pygame.draw.line(self.window, BLACK, (0, self.columns[i]), (SCREEN_WIDTH, self.columns[i]), thickness)
 
     def render_numbers(self):
-        for i in range(len((self.puzzle.board))):
+        for i in range(len(self.puzzle.board)):
             for j in range(len(self.puzzle.board)):
                 # Checks if the number was on the initial_board (in which case, we render the number blue).
-                if self.puzzle.initial_board[i][j] == 0 and 1 <= self.puzzle.board[i][j] <= 9:
+                if not self.puzzle.part_of_initial_board((i, j)) and 1 <= self.puzzle.board[i][j] <= 9:
                     if type(self.window) == pygame.Surface:
                         x_pos = (j * 60 + (j * 60 + 2)) / 2
                         y_pos = (i * 60 + (i * 60 + 2)) / 2
                         number = number_font.render(str(self.puzzle.board[i][j]), 1, BLUE)
                         self.window.blit(number, (x_pos, y_pos))
-                elif 1 <= self.puzzle.board[i][j] <= 9 and 1 <= self.puzzle.initial_board[i][j] <= 9:
+                elif self.puzzle.part_of_initial_board((i, j)) and 1 <= self.puzzle.board[i][j] <= 9:
                     if type(self.window) == pygame.Surface:
                         x_pos = (j * 60 + (j * 60 + 2)) / 2
                         y_pos = (i * 60 + (i * 60 + 2)) / 2
@@ -152,8 +165,8 @@ class Screen():
             # The index of the board to be updated.
             index = (click_pos[1] // INCREMENT, click_pos[0] // INCREMENT)
 
-            # Checks that a move has not been made there already.
-            if puzzle.board[index[0]][index[1]] == 0:
+            # Checks that the number was not part of the initial board.
+            if self.puzzle.initial_board[index[0]][index[1]] == 0:
                 screen.focused = True
 
             else:
@@ -169,7 +182,7 @@ screen.set_rows_and_columns()
 def main():
     running = True
     while running:
-        screen.window.fill((WHITE))
+        screen.window.fill(WHITE)
         screen.draw_lines()
         screen.render_numbers()
         for event in pygame.event.get():
@@ -182,10 +195,15 @@ def main():
 
                 if event.type == pygame.KEYDOWN:
                     # Checks if the key pressed is a number.
-                    key_pressed = event.key - 48
-                    index = (click_pos[1] // INCREMENT, click_pos[0] // INCREMENT)
-                    puzzle.make_move(index, key_pressed)
-                    screen.focused = False
+                    if 48 <= event.key <= 57:
+                        key_pressed = event.key - 48
+                        index = (click_pos[1] // INCREMENT, click_pos[0] // INCREMENT)
+                        puzzle.make_move(index, key_pressed)
+                        screen.focused = False
+                    elif event.key == pygame.K_BACKSPACE:
+                        index = (click_pos[1] // INCREMENT, click_pos[0] // INCREMENT)
+                        number = puzzle.board[index[0]][index[1]]
+                        puzzle.delete_move(index, number)
 
         if not puzzle.check_game_completed() and screen.focused:
             screen.highlight_box(click_pos)
