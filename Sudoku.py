@@ -36,7 +36,7 @@ class Puzzle():
     def make_move(self, coordinate, number):
         x_coord = coordinate[0]
         y_coord = coordinate[1]
-        if 1 <= number <= 9:
+        if screen.focused and 1 <= number <= 9:
             board[x_coord][y_coord] = number
 
     def check_rows(self, board):
@@ -164,12 +164,9 @@ def main():
 
                 if event.type == pygame.KEYDOWN:
                     # Checks if the key pressed is a number.
-                    if 49 <= event.key <= 57:
-                        key_pressed = event.key - 48
-                        if screen.focused:
-                            if 1 <= key_pressed <= 9:
-                                puzzle.make_move(index, key_pressed)
-                                screen.focused = False
+                    key_pressed = event.key - 48
+                    puzzle.make_move(index, key_pressed)
+                    screen.focused = False
 
         if not puzzle.check_game_completed() and screen.focused:
             screen.highlight_box(click_pos)
