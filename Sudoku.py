@@ -12,18 +12,18 @@ NUM_COLUMNS = 9
 INCREMENT = int(SCREEN_LENGTH / NUM_ROWS)
 
 number_font = pygame.font.SysFont("twcencondensed", 50)
-ending_font = pygame.font.SysFont("twocencondensed", 100)
+ending_font = pygame.font.SysFont("twocencondensed", 30)
 instruction_font = pygame.font.SysFont("twocencondensed", 30)
 
-initial_board = [[8, 2, 7, 1, 0, 4, 3, 9, 0],
-                 [9, 6, 5, 3, 2, 7, 1, 4, 8],
-                 [3, 4, 1, 6, 8, 0, 7, 5, 2],
-                 [5, 9, 0, 4, 0, 8, 2, 0, 1],
-                 [4, 7, 2, 0, 1, 3, 6, 8, 9],
-                 [6, 0, 8, 9, 7, 2, 4, 3, 5],
-                 [7, 8, 6, 2, 0, 5, 9, 1, 4],
-                 [0, 5, 4, 7, 9, 6, 8, 2, 3],
-                 [2, 3, 9, 8, 4, 1, 5, 6, 0]]
+initial_board = [[5, 3, 4, 6, 7, 8, 9, 1, 2],
+                 [6, 7, 2, 1, 9, 5, 3, 4, 8],
+                 [1, 9, 8, 3, 4, 2, 5, 6, 7],
+                 [8, 5, 9, 7, 6, 1, 4, 2, 3],
+                 [4, 2, 6, 8, 5, 3, 7, 9, 1],
+                 [7, 1, 3, 9, 2, 4, 8, 5, 6],
+                 [9, 6, 1, 5, 3, 7, 2, 8, 4],
+                 [2, 8, 7, 4, 1, 9, 6, 3, 5],
+                 [3, 4, 5, 2, 8, 6, 1, 7, 0]]
 
 # Creating a clone of initial board. This is the board to be updated throughout the game.
 board = copy.deepcopy(initial_board)
@@ -53,22 +53,6 @@ class Puzzle:
         if screen.focused and 1 <= number <= 9:
             board[x_coord][y_coord] = 0
 
-    def check_rows(self, board):
-        row_number = 0
-        for row in board:
-            row_number += 1
-            distinct_numbers = set(row)
-
-            # This means that not all spaces have been entered yet and thus, the game cannot be completed.
-            if 0 in distinct_numbers:
-                return False
-            # In other words, not all the numbers in thr row are distinct.
-            elif len(row) > len(distinct_numbers):
-                return False
-
-        if row_number == 9:
-            return True
-
     def check_game_completed(self):
         row_number = 0
         for row in self.board:
@@ -80,12 +64,60 @@ class Puzzle:
         if row_number == 9:
             return True
 
-    def check_columns(self):
-        transposed_board = [[row[i] for row in board] for i in range(len(board[0]))]
-        self.check_rows(transposed_board)
+    def check_single_row(self, row):
+        distinct_numbers = set(row)
+        if 0 in distinct_numbers:
+            return False
+        elif len(row) > len(distinct_numbers):
+            return False
+        else:
+            return True
+
+    # Gets the 9 blocks of the sudoku board (each represented by a row of 9 numbers).
+    def get_blocks(self):
+        blocks = []
+        for i in range(0, NUM_ROWS, 3):
+            for j in range(0, NUM_COLUMNS, 3):
+                blocks.append(board[i][j:j + 3] + board[i + 1][j: j + 3] + board[i + 2][j: j + 3])
+        return blocks
+
+    # Checks if a 3x3 sub matrix is valid.
+    def check_block(self, block):
+        distinct_numbers = set(block)
+        if 0 in distinct_numbers:
+            return False
+        elif len(block) > len(distinct_numbers):
+            return False
+        else:
+            return True
+
+    # Checks if a single row is valid (or column if we apply this method to the transposed board).
+    def check_all_rows(self, board):
+        row_number = 0
+        for row in board:
+            row_number += 1
+            if not self.check_single_row(row):
+                return False
+
+        if row_number == 9:
+            return True
+
+    def check_all_columns(self):
+        transposed_board = [[row[i] for row in board] for i in range(NUM_COLUMNS)]
+        self.check_all_rows(transposed_board)
+
+    def check_all_blocks(self):
+        blocks = self.get_blocks()
+        number_blocks = 0
+        for block in blocks:
+            number_blocks += 1
+            if not self.check_block(block):
+                return False
+        if number_blocks == 9:
+            return True
 
     def check_successful(self):
-        if self.check_rows(board) and self.check_columns:
+        if self.check_all_rows(board) and self.check_all_columns and self.check_all_blocks():
             return True
         else:
             return False
@@ -162,10 +194,10 @@ class Screen:
     def render_ending_message(self):
         if puzzle.check_successful():
             message = ending_font.render("Success!", 1, BLACK)
-            self.window.blit(message, (50, 100))
+            self.window.blit(message, (440, 560))
         else:
             message = ending_font.render("You lose!", 1, BLACK)
-            self.window.blit(message, (50, 100))
+            self.window.blit(message, (440, 560))
 
     def set_screen_focused(self, click_pos):
         # A click that is not on a line
@@ -201,7 +233,7 @@ def main():
                     click_pos = pygame.mouse.get_pos()
                     screen.set_screen_focused(click_pos)
 
-                if event.type == pygame.KEYDOWN:
+                if event.type == pygame.KEYDOWN and screen.focused:
                     # Checks if the key pressed is a number.
                     if 48 <= event.key <= 57:
                         key_pressed = event.key - 48
