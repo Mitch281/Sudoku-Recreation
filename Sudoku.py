@@ -1,4 +1,5 @@
 import pygame
+import copy
 
 pygame.init()
 
@@ -12,25 +13,30 @@ INCREMENT = int(SCREEN_LENGTH / NUM_ROWS)
 number_font = pygame.font.SysFont("twcencondensed", 50)
 ending_font = pygame.font.SysFont("magneto", 100)
 
-board = [[8, 2, 7, 1, 5, 4, 3, 9, 0],
-         [9, 6, 5, 3, 2, 7, 1, 4, 8],
-         [3, 4, 1, 6, 8, 9, 7, 5, 2],
-         [5, 9, 3, 4, 6, 8, 2, 7, 1],
-         [4, 7, 2, 5, 1, 3, 6, 8, 9],
-         [6, 1, 8, 9, 7, 2, 4, 3, 5],
-         [7, 8, 6, 2, 3, 5, 9, 1, 4],
-         [1, 5, 4, 7, 9, 6, 8, 2, 3],
-         [2, 3, 9, 8, 4, 1, 5, 6, 0]]
+initial_board = [[8, 2, 7, 1, 0, 4, 3, 9, 0],
+                 [9, 6, 5, 3, 2, 7, 1, 4, 8],
+                 [3, 4, 1, 6, 8, 0, 7, 5, 2],
+                 [5, 9, 0, 4, 0, 8, 2, 0, 1],
+                 [4, 7, 2, 0, 1, 3, 6, 8, 9],
+                 [6, 0, 8, 9, 7, 2, 4, 3, 5],
+                 [7, 8, 6, 2, 0, 5, 9, 1, 4],
+                 [0, 5, 4, 7, 9, 6, 8, 2, 3],
+                 [2, 3, 9, 8, 4, 1, 5, 6, 0]]
+
+# Creating a clone of initial board. This is the board to be updated throughout the game.
+board = copy.deepcopy(initial_board)
 
 # Colours
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREEN = (106, 226, 63)
+BLUE = (38, 44, 242)
 
 
 # Handles the actual puzzle
 class Puzzle():
-    def __init__(self, board):
+    def __init__(self, initial_board, board):
+        self.initial_board = initial_board
         self.board = board
 
     def make_move(self, coordinate, number):
@@ -107,7 +113,14 @@ class Screen():
     def render_numbers(self):
         for i in range(len((self.puzzle.board))):
             for j in range(len(self.puzzle.board)):
-                if 1 <= self.puzzle.board[i][j] <= 9:
+                # Checks if the number was on the initial_board (in which case, we render the number blue).
+                if self.puzzle.initial_board[i][j] == 0 and 1 <= self.puzzle.board[i][j] <= 9:
+                    if type(self.window) == pygame.Surface:
+                        x_pos = (j * 60 + (j * 60 + 2)) / 2
+                        y_pos = (i * 60 + (i * 60 + 2)) / 2
+                        number = number_font.render(str(self.puzzle.board[i][j]), 1, BLUE)
+                        self.window.blit(number, (x_pos, y_pos))
+                elif 1 <= self.puzzle.board[i][j] <= 9 and 1 <= self.puzzle.initial_board[i][j] <= 9:
                     if type(self.window) == pygame.Surface:
                         x_pos = (j * 60 + (j * 60 + 2)) / 2
                         y_pos = (i * 60 + (i * 60 + 2)) / 2
@@ -147,7 +160,7 @@ class Screen():
                 screen.focused = False
 
 
-puzzle = Puzzle(board)
+puzzle = Puzzle(initial_board, board)
 screen = Screen(pygame.display.set_mode((SCREEN_WIDTH, SCREEN_LENGTH)),
                 pygame.display.set_caption("Sudoku"), [], [], False, puzzle)
 screen.set_rows_and_columns()
