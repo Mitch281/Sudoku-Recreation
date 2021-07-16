@@ -123,7 +123,7 @@ class Screen():
         left_line = x_pos - x_remainder
         top_line = y_pos - y_remainder
         if type(self.window) == pygame.Surface:
-            pygame.draw.rect(self.window, GREEN, (left_line, top_line, INCREMENT, INCREMENT))
+            pygame.draw.rect(self.window, GREEN, (left_line, top_line, INCREMENT, INCREMENT), 2)
 
     def render_ending_message(self):
         if puzzle.check_successful():
@@ -132,6 +132,19 @@ class Screen():
         else:
             message = ending_font.render("You lose!", 1, BLACK)
             self.window.blit(message, (50, 100))
+
+    def set_screen_focused(self, click_pos):
+        # A click that is not on a line
+        if (click_pos[0] % 60 != 0) and (click_pos[1] % 60 != 0):
+            # The index of the board to be updated.
+            index = (click_pos[1] // INCREMENT, click_pos[0] // INCREMENT)
+
+            # Checks that a move has not been made there already.
+            if puzzle.board[index[0]][index[1]] == 0:
+                screen.focused = True
+
+            else:
+                screen.focused = False
 
 
 puzzle = Puzzle(board)
@@ -152,19 +165,12 @@ def main():
             if not puzzle.check_game_completed():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     click_pos = pygame.mouse.get_pos()
-
-                    # A click that is not on a line
-                    if (click_pos[0] % 60 != 0) and (click_pos[1] % 60 != 0):
-                        # The index of the board to be updated.
-                        index = (click_pos[1] // INCREMENT, click_pos[0] // INCREMENT)
-
-                        # Checks that a move has not been made there already.
-                        if puzzle.board[index[0]][index[1]] == 0:
-                            screen.focused = True
+                    screen.set_screen_focused(click_pos)
 
                 if event.type == pygame.KEYDOWN:
                     # Checks if the key pressed is a number.
                     key_pressed = event.key - 48
+                    index = (click_pos[1] // INCREMENT, click_pos[0] // INCREMENT)
                     puzzle.make_move(index, key_pressed)
                     screen.focused = False
 
