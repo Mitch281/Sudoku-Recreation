@@ -93,6 +93,7 @@ class Puzzle:
                 blocks.append(board[i][j:j + 3] + board[i + 1][j: j + 3] + board[i + 2][j: j + 3])
         return blocks
 
+    # Here, the block number is between 0 and 8. The block numbers go left to right (start left when new row).
     def check_single_block(self, block_number):
         block = self.get_blocks()[block_number]
         distinct_numbers = set(block)
@@ -101,6 +102,8 @@ class Puzzle:
         return True
 
     def check_successful(self):
+        if not self.check_board_filled():
+            return False
         for i in range(NUM_ROWS):
             if not self.check_single_row(i):
                 return False
