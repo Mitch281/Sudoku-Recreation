@@ -53,25 +53,37 @@ class Puzzle:
         if screen.focused and 1 <= number <= 9:
             board[x_coord][y_coord] = 0
 
-    def check_game_completed(self):
-        row_number = 0
-        for row in self.board:
+    # Checks if an entry of board was in the initial board.
+    def part_of_initial_board(self, index):
+        if self.initial_board[index[0]][index[1]] == 0:
+            return False
+        elif 1 <= self.initial_board[index[0]][index[1]] <= 9:
+            return True
+
+    # Checks if the board is completely filled.
+    def check_board_filled(self):
+        for row in board:
             if 0 in row:
                 return False
-            else:
-                row_number += 1
+        return True
 
-        if row_number == 9:
-            return True
-
-    def check_single_row(self, row):
+    # Here, the row number is between 0 and 8.
+    def check_single_row(self, row_number):
+        row = board[row_number]
         distinct_numbers = set(row)
-        if 0 in distinct_numbers:
+        if len(row) > len(distinct_numbers):
             return False
-        elif len(row) > len(distinct_numbers):
+        return True
+
+    # Here, the column number is between 0 and 8.
+    def check_single_column(self, column_number):
+        column = []
+        for row in board:
+            column.append(row[column_number])
+        distinct_numbers = set(column)
+        if len(column) > len(distinct_numbers):
             return False
-        else:
-            return True
+        return True
 
     # Gets the 9 blocks of the sudoku board (each represented by a row of 9 numbers).
     def get_blocks(self):
@@ -81,53 +93,22 @@ class Puzzle:
                 blocks.append(board[i][j:j + 3] + board[i + 1][j: j + 3] + board[i + 2][j: j + 3])
         return blocks
 
-    # Checks if a 3x3 sub matrix is valid.
-    def check_block(self, block):
+    def check_single_block(self, block_number):
+        block = self.get_blocks()[block_number]
         distinct_numbers = set(block)
-        if 0 in distinct_numbers:
+        if len(block) > len(distinct_numbers):
             return False
-        elif len(block) > len(distinct_numbers):
-            return False
-        else:
-            return True
-
-    # Checks if a single row is valid (or column if we apply this method to the transposed board).
-    def check_all_rows(self, board):
-        row_number = 0
-        for row in board:
-            row_number += 1
-            if not self.check_single_row(row):
-                return False
-
-        if row_number == 9:
-            return True
-
-    def check_all_columns(self):
-        transposed_board = [[row[i] for row in board] for i in range(NUM_COLUMNS)]
-        self.check_all_rows(transposed_board)
-
-    def check_all_blocks(self):
-        blocks = self.get_blocks()
-        number_blocks = 0
-        for block in blocks:
-            number_blocks += 1
-            if not self.check_block(block):
-                return False
-        if number_blocks == 9:
-            return True
+        return True
 
     def check_successful(self):
-        if self.check_all_rows(board) and self.check_all_columns and self.check_all_blocks():
-            return True
-        else:
-            return False
-
-    # Checks if an entry of board was in the initial board.
-    def part_of_initial_board(self, index):
-        if self.initial_board[index[0]][index[1]] == 0:
-            return False
-        elif 1 <= self.initial_board[index[0]][index[1]] <= 9:
-            return True
+        for i in range(NUM_ROWS):
+            if not self.check_single_row(i):
+                return False
+            elif not self.check_single_column(i):
+                return False
+            elif not self.check_single_block(i):
+                return False
+        return True
 
 
 # Handles GUI
@@ -228,7 +209,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if not puzzle.check_game_completed():
+            if not puzzle.check_board_filled():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     click_pos = pygame.mouse.get_pos()
                     screen.set_screen_focused(click_pos)
@@ -245,10 +226,10 @@ def main():
                         number = puzzle.board[index[0]][index[1]]
                         puzzle.delete_move(index, number)
 
-        if not puzzle.check_game_completed() and screen.focused:
+        if not puzzle.check_board_filled() and screen.focused:
             screen.highlight_box(click_pos)
 
-        elif puzzle.check_game_completed():
+        elif puzzle.check_board_filled():
             screen.render_ending_message()
 
         screen.render_bottom_instructions()
