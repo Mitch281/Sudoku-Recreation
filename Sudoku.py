@@ -194,13 +194,12 @@ class Puzzle:
 
 # Handles GUI
 class Screen:
-    def __init__(self, window, caption, rows, columns, focused, puzzle):
+    def __init__(self, window, caption, rows, columns, focused):
         self.window = window
         self.caption = caption
         self.rows = rows
         self.columns = columns
         self.focused = focused
-        self.puzzle = puzzle
 
     def set_rows_and_columns(self):
         for i in range(0, SCREEN_LENGTH + 1, INCREMENT):
@@ -227,15 +226,15 @@ class Screen:
         x_pos = (col_num * 60 + col_num * 60 + 2) / 2
         y_pos = (row_num * 60 + row_num * 60 + 2) / 2
         if not puzzle.initial_board[row_num][col_num] == 0:
-            number = number_font.render(str(self.puzzle.board[row_num][col_num]), 1, BLACK)
+            number = number_font.render(str(puzzle.board[row_num][col_num]), 1, BLACK)
         else:
-            number = number_font.render(str(self.puzzle.board[row_num][col_num]), 1, BLUE)
+            number = number_font.render(str(puzzle.board[row_num][col_num]), 1, BLUE)
         self.window.blit(number, (x_pos, y_pos))
 
     def render_numbers(self):
-        for i in range(len(self.puzzle.board)):
-            for j in range(len(self.puzzle.board)):
-                if 1 <= self.puzzle.board[i][j] <= 9:
+        for i in range(len(puzzle.board)):
+            for j in range(len(puzzle.board)):
+                if 1 <= puzzle.board[i][j] <= 9:
                     self.render_single_number(i, j)
 
     # Highlights the box that is currently in focus in green.
@@ -263,7 +262,7 @@ class Screen:
             index = (click_pos[1] // INCREMENT, click_pos[0] // INCREMENT)
 
             # Checks that the number was not part of the initial board.
-            if self.puzzle.initial_board[index[0]][index[1]] == 0:
+            if puzzle.initial_board[index[0]][index[1]] == 0:
                 screen.focused = True
 
             else:
@@ -272,7 +271,7 @@ class Screen:
 
 puzzle = Puzzle(initial_board, board, True)
 screen = Screen(pygame.display.set_mode((SCREEN_WIDTH, SCREEN_LENGTH + BOTTOM_BIT)),
-                pygame.display.set_caption("Sudoku"), [], [], False, puzzle)
+                pygame.display.set_caption("Sudoku"), [], [], False)
 screen.set_rows_and_columns()
 
 
