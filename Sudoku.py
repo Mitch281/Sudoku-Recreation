@@ -16,14 +16,14 @@ ending_font = pygame.font.SysFont("twocencondensed", 30)
 instruction_font = pygame.font.SysFont("twocencondensed", 30)
 
 initial_board = [[0, 3, 4, 6, 0, 8, 9, 1, 2],
-                 [6, 7, 2, 1, 9, 5, 3, 4, 8],
-                 [0, 9, 0, 3, 0, 2, 5, 6, 7],
-                 [8, 5, 9, 7, 6, 1, 4, 2, 3],
-                 [4, 2, 6, 8, 5, 3, 7, 9, 1],
+                 [6, 7, 2, 1, 9, 5, 3, 0, 8],
+                 [0, 9, 0, 3, 0, 2, 5, 0, 7],
+                 [8, 5, 0, 7, 0, 1, 4, 2, 3],
+                 [0, 2, 6, 8, 5, 3, 0, 0, 1],
                  [7, 1, 0, 9, 0, 4, 8, 5, 6],
-                 [9, 6, 1, 5, 3, 7, 2, 8, 4],
-                 [2, 8, 7, 4, 1, 9, 6, 3, 5],
-                 [3, 4, 5, 2, 8, 6, 1, 7, 0]]
+                 [0, 6, 1, 5, 3, 7, 2, 8, 4],
+                 [2, 8, 0, 4, 1, 9, 6, 3, 5],
+                 [0, 4, 5, 2, 8, 6, 1, 7, 0]]
 
 # Creating a clone of initial board. This is the board to be updated throughout the game.
 board = copy.deepcopy(initial_board)
@@ -52,13 +52,6 @@ class Puzzle:
         y_coord = coordinate[1]
         if screen.focused and 1 <= number <= 9:
             board[x_coord][y_coord] = 0
-
-    # Checks if an entry of board was in the initial board.
-    def part_of_initial_board(self, index):
-        if self.initial_board[index[0]][index[1]] == 0:
-            return False
-        elif 1 <= self.initial_board[index[0]][index[1]] <= 9:
-            return
 
     def get_block_number(self, row_number, column_number):
         across_block_number = row_number // 3
@@ -185,6 +178,7 @@ class Puzzle:
                 column_number = empty_cells[index][1]
                 current_number = board[row_number][column_number] + 1
 
+
 # Handles GUI
 class Screen:
     def __init__(self, window, caption, rows, columns, focused, puzzle):
@@ -221,18 +215,17 @@ class Screen:
     def render_numbers(self):
         for i in range(len(self.puzzle.board)):
             for j in range(len(self.puzzle.board)):
-                # Checks if the number was on the initial_board (in which case, we render the number blue).
-                if not self.puzzle.part_of_initial_board((i, j)) and 1 <= self.puzzle.board[i][j] <= 9:
-                    if type(self.window) == pygame.Surface:
-                        x_pos = (j * 60 + (j * 60 + 2)) / 2
-                        y_pos = (i * 60 + (i * 60 + 2)) / 2
-                        number = number_font.render(str(self.puzzle.board[i][j]), 1, BLUE)
-                        self.window.blit(number, (x_pos, y_pos))
-                elif self.puzzle.part_of_initial_board((i, j)) and 1 <= self.puzzle.board[i][j] <= 9:
-                    if type(self.window) == pygame.Surface:
-                        x_pos = (j * 60 + (j * 60 + 2)) / 2
-                        y_pos = (i * 60 + (i * 60 + 2)) / 2
+                if 1 <= self.puzzle.board[i][j] <= 9:
+                    x_pos = (j * 60 + j * 60 + 2) / 2
+                    y_pos = (i * 60 + i * 60 + 2) / 2
+
+                    # The number was already on the board initially.
+                    if not puzzle.initial_board[i][j] == 0:
                         number = number_font.render(str(self.puzzle.board[i][j]), 1, BLACK)
+                        self.window.blit(number, (x_pos, y_pos))
+
+                    else:
+                        number = number_font.render(str(self.puzzle.board[i][j]), 1, BLUE)
                         self.window.blit(number, (x_pos, y_pos))
 
     # Highlights the box that is currently in focus in green.
@@ -243,8 +236,7 @@ class Screen:
         y_remainder = y_pos % INCREMENT
         left_line = x_pos - x_remainder
         top_line = y_pos - y_remainder
-        if type(self.window) == pygame.Surface:
-            pygame.draw.rect(self.window, GREEN, (left_line, top_line, INCREMENT, INCREMENT), 2)
+        pygame.draw.rect(self.window, GREEN, (left_line, top_line, INCREMENT, INCREMENT), 2)
 
     def render_ending_message(self):
         if puzzle.check_successful():
