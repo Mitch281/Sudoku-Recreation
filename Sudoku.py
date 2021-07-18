@@ -1,5 +1,6 @@
 import pygame
 import copy
+import time
 
 pygame.init()
 
@@ -37,9 +38,10 @@ BLUE = (38, 44, 242)
 
 # Handles the actual puzzle
 class Puzzle:
-    def __init__(self, initial_board, board):
+    def __init__(self, initial_board, board, solvable):
         self.initial_board = initial_board
         self.board = board
+        self.solvable = solvable
 
     def make_move(self, coordinate, number):
         x_coord = coordinate[0]
@@ -144,6 +146,7 @@ class Puzzle:
         return True
 
     def solve(self):
+        solvable = True
 
         # Get empty cells
         empty_cells = []
@@ -156,6 +159,7 @@ class Puzzle:
         index = 0
 
         current_number = 1
+        timeout = time.time() + 2
         while not self.check_successful():
             row_number = empty_cells[index][0]
             column_number = empty_cells[index][1]
@@ -177,6 +181,11 @@ class Puzzle:
                 row_number = empty_cells[index][0]
                 column_number = empty_cells[index][1]
                 current_number = board[row_number][column_number] + 1
+
+            # Breaks the loop if the board is not solved within 2 seconds.
+            if time.time() > timeout:
+                self.solvable = False
+                break
 
 
 # Handles GUI
@@ -207,10 +216,8 @@ class Screen:
                 pygame.draw.line(self.window, BLACK, (0, self.columns[i]), (SCREEN_WIDTH, self.columns[i]), thickness)
 
     def render_bottom_instructions(self):
-        instruction1 = instruction_font.render("Press enter to submit answer", False, BLACK)
-        instruction2 = instruction_font.render("Press spacebar to solve", False, BLACK)
-        self.window.blit(instruction1, (10, 540))
-        self.window.blit(instruction2, (10, 560))
+        instruction = instruction_font.render("Press spacebar to solve", False, BLACK)
+        self.window.blit(instruction, (10, 560))
 
     def render_numbers(self):
         for i in range(len(self.puzzle.board)):
@@ -260,7 +267,7 @@ class Screen:
                 screen.focused = False
 
 
-puzzle = Puzzle(initial_board, board)
+puzzle = Puzzle(initial_board, board, True)
 screen = Screen(pygame.display.set_mode((SCREEN_WIDTH, SCREEN_LENGTH + BOTTOM_BIT)),
                 pygame.display.set_caption("Sudoku"), [], [], False, puzzle)
 screen.set_rows_and_columns()
@@ -301,6 +308,12 @@ def main():
 
         elif puzzle.check_board_filled():
             screen.render_ending_message()
+
+        if not puzzle.solvable:
+            message1 = ending_font.render("The puzzle cannot be", 1, BLACK)
+            message2 = ending_font.render("solved in its current form", 1, BLACK)
+            screen.window.blit(message1, (260, 560))
+            screen.window.blit(message2, (260, 580))
 
         screen.render_bottom_instructions()
 
