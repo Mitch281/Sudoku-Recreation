@@ -16,16 +16,15 @@ number_font = pygame.font.SysFont("twcencondensed", 50)
 ending_font = pygame.font.SysFont("twocencondensed", 30)
 instruction_font = pygame.font.SysFont("twocencondensed", 30)
 
-initial_board = [[0, 3, 4, 6, 0, 8, 9, 1, 2],
-                 [6, 7, 2, 1, 9, 5, 3, 0, 8],
-                 [0, 9, 0, 3, 0, 2, 5, 0, 7],
-                 [8, 5, 0, 7, 0, 1, 4, 2, 3],
-                 [0, 2, 6, 8, 5, 3, 0, 0, 1],
-                 [7, 1, 0, 9, 0, 4, 8, 5, 6],
-                 [0, 6, 1, 5, 3, 7, 2, 8, 4],
-                 [2, 8, 0, 4, 1, 9, 6, 3, 5],
-                 [0, 4, 5, 2, 8, 6, 1, 7, 0]]
-
+initial_board = [[0, 0, 0, 0, 0, 4, 3, 0, 0],
+                 [9, 0, 0, 0, 2, 0, 0, 0, 8],
+                 [0, 0, 0, 6, 0, 9, 0, 5, 0],
+                 [0, 0, 0, 0, 0, 0, 0, 0, 1],
+                 [0, 0, 2, 5, 0, 3, 6, 8, 0],
+                 [6, 0, 0, 0, 0, 0, 0, 0, 0],
+                 [0, 0, 0, 2, 0, 5, 0, 0, 0],
+                 [1, 0, 0, 0, 9, 0, 0, 0, 3],
+                 [0, 0, 9, 8, 0, 0, 0, 6, 0]]
 # Creating a clone of initial board. This is the board to be updated throughout the game.
 board = copy.deepcopy(initial_board)
 
@@ -146,7 +145,6 @@ class Puzzle:
         return True
 
     def solve(self):
-        solvable = True
 
         # Get empty cells
         empty_cells = []
@@ -155,37 +153,44 @@ class Puzzle:
                 if initial_board[i][j] == 0:
                     empty_cells.append((i, j))
 
-        # The current index of empty_cells we are on.
         index = 0
-
-        current_number = 1
-        timeout = time.time() + 2
+        number = 1
         while not self.check_successful():
-            row_number = empty_cells[index][0]
-            column_number = empty_cells[index][1]
-            block_number = self.get_block_number(row_number, column_number)
-            board[row_number][column_number] = current_number
-            if self.check_single_row(row_number) and self.check_single_column(column_number) \
-                    and self.check_single_block(block_number):
+            row_num = empty_cells[index][0]
+            col_num = empty_cells[index][1]
+            block_num = self.get_block_number(row_num, col_num)
+            board[row_num][col_num] = number
+            screen.render_single_number(row_num, col_num)
+            if self.check_single_row(row_num) and self.check_single_column(col_num) \
+            and self.check_single_block(block_num):
                 index += 1
-                current_number = 1
+                number = 1
             else:
-                current_number += 1
+                number += 1
 
-            # We checked all numbers 1 through 9 and none of them were valid. Thus, we need to go back to the last empty
-            # spot and try the next number above it.
-            if current_number == 10:
-                # Reset the current cell value back to zero
-                board[row_number][column_number] = 0
-                index -= 1
-                row_number = empty_cells[index][0]
-                column_number = empty_cells[index][1]
-                current_number = board[row_number][column_number] + 1
+                # We have tried every number for the cell.
+                if number == 10:
+                    # We have tried every number for the first cell and thus, the puzzle is unsolvable.
+                    if index == 0:
 
-            # Breaks the loop if the board is not solved within 2 seconds.
-            if time.time() > timeout:
-                self.solvable = False
-                break
+                        # So we do not render the 9 on top left.
+                        board[0][0] = False
+
+                        self.solvable = False
+                        break
+                    else:
+                        # Find the empty (relative to initial board) cell that is not 9. Also reset the current cell.
+                        board[row_num][col_num] = 0
+                        index -= 1
+                        row_num = empty_cells[index][0]
+                        col_num = empty_cells[index][1]
+                        number = board[row_num][col_num] + 1
+                        while board[row_num][col_num] == 9:
+                            board[row_num][col_num] = 0
+                            index -= 1
+                            row_num = empty_cells[index][0]
+                            col_num = empty_cells[index][1]
+                            number = board[row_num][col_num] + 1
 
 
 # Handles GUI
@@ -219,21 +224,20 @@ class Screen:
         instruction = instruction_font.render("Press spacebar to solve", False, BLACK)
         self.window.blit(instruction, (10, 560))
 
+    def render_single_number(self, row_num, col_num):
+        x_pos = (col_num * 60 + col_num * 60 + 2) / 2
+        y_pos = (row_num * 60 + row_num * 60 + 2) / 2
+        if not puzzle.initial_board[row_num][col_num] == 0:
+            number = number_font.render(str(self.puzzle.board[row_num][col_num]), 1, BLACK)
+        else:
+            number = number_font.render(str(self.puzzle.board[row_num][col_num]), 1, BLUE)
+        self.window.blit(number, (x_pos, y_pos))
+
     def render_numbers(self):
         for i in range(len(self.puzzle.board)):
             for j in range(len(self.puzzle.board)):
                 if 1 <= self.puzzle.board[i][j] <= 9:
-                    x_pos = (j * 60 + j * 60 + 2) / 2
-                    y_pos = (i * 60 + i * 60 + 2) / 2
-
-                    # The number was already on the board initially.
-                    if not puzzle.initial_board[i][j] == 0:
-                        number = number_font.render(str(self.puzzle.board[i][j]), 1, BLACK)
-                        self.window.blit(number, (x_pos, y_pos))
-
-                    else:
-                        number = number_font.render(str(self.puzzle.board[i][j]), 1, BLUE)
-                        self.window.blit(number, (x_pos, y_pos))
+                    self.render_single_number(i, j)
 
     # Highlights the box that is currently in focus in green.
     def highlight_box(self, click_position):
@@ -303,6 +307,7 @@ def main():
                     if event.key == pygame.K_SPACE:
                         puzzle.solve()
 
+
         if not puzzle.check_board_filled() and screen.focused:
             screen.highlight_box(click_pos)
 
@@ -311,7 +316,7 @@ def main():
 
         if not puzzle.solvable:
             message1 = ending_font.render("The puzzle cannot be", 1, BLACK)
-            message2 = ending_font.render("solved in its current form", 1, BLACK)
+            message2 = ending_font.render("solved in its current form", 1 ,BLACK)
             screen.window.blit(message1, (260, 560))
             screen.window.blit(message2, (260, 580))
 
