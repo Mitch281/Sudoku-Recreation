@@ -160,7 +160,6 @@ class Puzzle:
             col_num = empty_cells[index][1]
             block_num = self.get_block_number(row_num, col_num)
             board[row_num][col_num] = number
-            screen.render_single_number(row_num, col_num)
             if self.check_single_row(row_num) and self.check_single_column(col_num) \
             and self.check_single_block(block_num):
                 index += 1
@@ -317,8 +316,10 @@ def main():
         if not puzzle.solvable:
             message1 = ending_font.render("The puzzle cannot be", 1, BLACK)
             message2 = ending_font.render("solved in its current form", 1 ,BLACK)
-            screen.window.blit(message1, (260, 560))
-            screen.window.blit(message2, (260, 580))
+            message3 = ending_font.render("(using backtracking algorithm", 1, BLACK)
+            screen.window.blit(message1, (260, 540))
+            screen.window.blit(message2, (260, 560))
+            screen.window.blit(message3, (260, 580))
 
         screen.render_bottom_instructions()
 
