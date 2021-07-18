@@ -15,12 +15,12 @@ number_font = pygame.font.SysFont("twcencondensed", 50)
 ending_font = pygame.font.SysFont("twocencondensed", 30)
 instruction_font = pygame.font.SysFont("twocencondensed", 30)
 
-initial_board = [[5, 3, 4, 6, 7, 8, 9, 1, 2],
+initial_board = [[0, 3, 4, 6, 0, 8, 9, 1, 2],
                  [6, 7, 2, 1, 9, 5, 3, 4, 8],
-                 [1, 9, 8, 3, 4, 2, 5, 6, 7],
+                 [0, 9, 0, 3, 0, 2, 5, 6, 7],
                  [8, 5, 9, 7, 6, 1, 4, 2, 3],
                  [4, 2, 6, 8, 5, 3, 7, 9, 1],
-                 [7, 1, 3, 9, 2, 4, 8, 5, 6],
+                 [7, 1, 0, 9, 0, 4, 8, 5, 6],
                  [9, 6, 1, 5, 3, 7, 2, 8, 4],
                  [2, 8, 7, 4, 1, 9, 6, 3, 5],
                  [3, 4, 5, 2, 8, 6, 1, 7, 0]]
@@ -58,7 +58,29 @@ class Puzzle:
         if self.initial_board[index[0]][index[1]] == 0:
             return False
         elif 1 <= self.initial_board[index[0]][index[1]] <= 9:
-            return True
+            return
+
+    def get_block_number(self, row_number, column_number):
+        across_block_number = row_number // 3
+        vertical_block_number = column_number // 3
+        if (across_block_number, vertical_block_number) == (0, 0):
+            return 0
+        elif (across_block_number, vertical_block_number) == (0, 1):
+            return 1
+        elif (across_block_number, vertical_block_number) == (0, 2):
+            return 2
+        elif (across_block_number, vertical_block_number) == (1, 0):
+            return 3
+        elif (across_block_number, vertical_block_number) == (1, 1):
+            return 4
+        elif (across_block_number, vertical_block_number) == (1, 2):
+            return 5
+        elif (across_block_number, vertical_block_number) == (2, 0):
+            return 6
+        elif (across_block_number, vertical_block_number) == (2, 1):
+            return 7
+        elif (across_block_number, vertical_block_number) == (2, 2):
+            return 8
 
     # Checks if the board is completely filled.
     def check_board_filled(self):
@@ -69,20 +91,30 @@ class Puzzle:
 
     # Here, the row number is between 0 and 8.
     def check_single_row(self, row_number):
-        row = board[row_number]
+        row = self.board[row_number]
+        num_zeroes = row.count(0)
         distinct_numbers = set(row)
-        if len(row) > len(distinct_numbers):
-            return False
+        if 0 in row:
+            if len(row) - num_zeroes + 1 > len(distinct_numbers):
+                return False
+        elif 0 not in row:
+            if len(row) > len(distinct_numbers):
+                return False
         return True
 
     # Here, the column number is between 0 and 8.
     def check_single_column(self, column_number):
         column = []
-        for row in board:
+        for row in self.board:
             column.append(row[column_number])
+        num_zeroes = column.count(0)
         distinct_numbers = set(column)
-        if len(column) > len(distinct_numbers):
-            return False
+        if 0 in column:
+            if len(column) - num_zeroes + 1 > len(distinct_numbers):
+                return False
+        elif 0 not in column:
+            if len(column) > len(distinct_numbers):
+                return False
         return True
 
     # Gets the 9 blocks of the sudoku board (each represented by a row of 9 numbers).
@@ -96,9 +128,14 @@ class Puzzle:
     # Here, the block number is between 0 and 8. The block numbers go left to right (start left when new row).
     def check_single_block(self, block_number):
         block = self.get_blocks()[block_number]
+        num_zeroes = block.count(0)
         distinct_numbers = set(block)
-        if len(block) > len(distinct_numbers):
-            return False
+        if 0 in block:
+            if len(block) - num_zeroes + 1 > len(distinct_numbers):
+                return False
+        elif 0 not in block:
+            if len(block) > len(distinct_numbers):
+                return False
         return True
 
     def check_successful(self):
@@ -113,6 +150,40 @@ class Puzzle:
                 return False
         return True
 
+    def solve(self):
+
+        # Get empty cells
+        empty_cells = []
+        for i in range(NUM_ROWS):
+            for j in range(NUM_COLUMNS):
+                if initial_board[i][j] == 0:
+                    empty_cells.append((i, j))
+
+        # The current index of empty_cells we are on.
+        index = 0
+
+        current_number = 1
+        while not self.check_successful():
+            row_number = empty_cells[index][0]
+            column_number = empty_cells[index][1]
+            block_number = self.get_block_number(row_number, column_number)
+            board[row_number][column_number] = current_number
+            if self.check_single_row(row_number) and self.check_single_column(column_number) \
+                    and self.check_single_block(block_number):
+                index += 1
+                current_number = 1
+            else:
+                current_number += 1
+
+            # We checked all numbers 1 through 9 and none of them were valid. Thus, we need to go back to the last empty
+            # spot and try the next number above it.
+            if current_number == 10:
+                # Reset the current cell value back to zero
+                board[row_number][column_number] = 0
+                index -= 1
+                row_number = empty_cells[index][0]
+                column_number = empty_cells[index][1]
+                current_number = board[row_number][column_number] + 1
 
 # Handles GUI
 class Screen:
@@ -228,6 +299,10 @@ def main():
                         index = (click_pos[1] // INCREMENT, click_pos[0] // INCREMENT)
                         number = puzzle.board[index[0]][index[1]]
                         puzzle.delete_move(index, number)
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        puzzle.solve()
 
         if not puzzle.check_board_filled() and screen.focused:
             screen.highlight_box(click_pos)
