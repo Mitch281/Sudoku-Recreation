@@ -16,15 +16,15 @@ number_font = pygame.font.SysFont("twcencondensed", 50)
 ending_font = pygame.font.SysFont("twocencondensed", 30)
 instruction_font = pygame.font.SysFont("twocencondensed", 30)
 
-initial_board = [[0, 0, 0, 0, 0, 4, 3, 0, 0],
-                 [9, 0, 0, 0, 2, 0, 0, 0, 8],
-                 [0, 0, 0, 6, 0, 9, 0, 5, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 1],
-                 [0, 0, 2, 5, 0, 3, 6, 8, 0],
-                 [6, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 2, 0, 5, 0, 0, 0],
-                 [1, 0, 0, 0, 9, 0, 0, 0, 3],
-                 [0, 0, 9, 8, 0, 0, 0, 6, 0]]
+initial_board = [[7, 8, 0, 4, 0, 0, 1, 2, 0],
+                 [6, 0, 0, 0, 7, 5, 0, 0, 9],
+                 [0, 0, 0, 6, 0, 1, 0, 7, 8],
+                 [0, 0, 7, 0, 4, 0, 2, 6, 0],
+                 [0, 0, 1, 0, 5, 0, 9, 3, 0],
+                 [9, 0, 4, 0, 6, 0, 0, 0, 5],
+                 [0, 7, 0, 3, 0, 0, 0, 1, 2],
+                 [1, 2, 0, 0, 0, 7, 4, 0, 0],
+                 [0, 4, 9, 2, 0, 6, 0, 0, 7]]
 # Creating a clone of initial board. This is the board to be updated throughout the game.
 board = copy.deepcopy(initial_board)
 
@@ -156,12 +156,23 @@ class Puzzle:
         index = 0
         number = 1
         while not self.check_successful():
+            time.sleep(0.1)
             row_num = empty_cells[index][0]
             col_num = empty_cells[index][1]
             block_num = self.get_block_number(row_num, col_num)
-            board[row_num][col_num] = number
+            self.board[row_num][col_num] = number
+
+            # Visualise the solving process
+            screen.window.fill(WHITE)
+            screen.draw_lines()
+            screen.render_numbers()
+            screen.render_single_number(row_num, col_num)
+            screen.solve_highlight_box(row_num, col_num)
+            screen.render_bottom_instructions()
+            pygame.display.update()
+
             if self.check_single_row(row_num) and self.check_single_column(col_num) \
-            and self.check_single_block(block_num):
+                    and self.check_single_block(block_num):
                 index += 1
                 number = 1
             else:
@@ -169,23 +180,20 @@ class Puzzle:
 
                 # We have tried every number for the cell.
                 if number == 10:
-                    # We have tried every number for the first cell and thus, the puzzle is unsolvable.
+                    # We have tried every number for the first empty (relative to initial board)
+                    # cell and thus, the puzzle is unsolvable (using backtracking).
                     if index == 0:
-
-                        # So we do not render the 9 on top left.
-                        board[0][0] = False
-
                         self.solvable = False
                         break
                     else:
                         # Find the empty (relative to initial board) cell that is not 9. Also reset the current cell.
-                        board[row_num][col_num] = 0
+                        self.board[row_num][col_num] = 0
                         index -= 1
                         row_num = empty_cells[index][0]
                         col_num = empty_cells[index][1]
                         number = board[row_num][col_num] + 1
-                        while board[row_num][col_num] == 9:
-                            board[row_num][col_num] = 0
+                        while self.board[row_num][col_num] == 9:
+                            self.board[row_num][col_num] = 0
                             index -= 1
                             row_num = empty_cells[index][0]
                             col_num = empty_cells[index][1]
@@ -247,6 +255,10 @@ class Screen:
         top_line = y_pos - y_remainder
         pygame.draw.rect(self.window, GREEN, (left_line, top_line, INCREMENT, INCREMENT), 2)
 
+    # Highlights the box currently being solved (used for backtracking algorithm).
+    def solve_highlight_box(self, row_num, col_num):
+        pygame.draw.rect(self.window, GREEN, (col_num * INCREMENT, row_num * INCREMENT, INCREMENT, INCREMENT), 2)
+
     def render_ending_message(self):
         if puzzle.check_successful():
             message = ending_font.render("Success!", 1, BLACK)
@@ -281,6 +293,7 @@ def main():
         screen.window.fill(WHITE)
         screen.draw_lines()
         screen.render_numbers()
+        screen.render_bottom_instructions()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -305,7 +318,6 @@ def main():
                     if event.key == pygame.K_SPACE:
                         puzzle.solve()
 
-
         if not puzzle.check_board_filled() and screen.focused:
             screen.highlight_box(click_pos)
 
@@ -314,13 +326,11 @@ def main():
 
         if not puzzle.solvable:
             message1 = ending_font.render("The puzzle cannot be", 1, BLACK)
-            message2 = ending_font.render("solved in its current form", 1 ,BLACK)
+            message2 = ending_font.render("solved in its current form", 1, BLACK)
             message3 = ending_font.render("(using backtracking algorithm", 1, BLACK)
             screen.window.blit(message1, (260, 540))
             screen.window.blit(message2, (260, 560))
             screen.window.blit(message3, (260, 580))
-
-        screen.render_bottom_instructions()
 
         pygame.display.update()
 
