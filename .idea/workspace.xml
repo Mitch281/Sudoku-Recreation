@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ed5938ce-f2b1-4fa8-93bf-37b34e5daa5b" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Sudoku.py" beforeDir="false" afterPath="$PROJECT_DIR$/Sudoku.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

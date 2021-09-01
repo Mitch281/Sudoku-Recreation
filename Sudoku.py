@@ -311,12 +311,14 @@ class Screen:
         :param col_num: column number of board
         :return: None
         """
-        x_pos = (col_num * 60 + col_num * 60 + 2) / 2
-        y_pos = (row_num * 60 + row_num * 60 + 2) / 2
         if not puzzle.initial_board[row_num][col_num] == 0:
             number = number_font.render(str(puzzle.board[row_num][col_num]), 1, BLACK)
         else:
             number = number_font.render(str(puzzle.board[row_num][col_num]), 1, BLUE)
+        number_width = number.get_width()
+        number_height = number.get_height()
+        x_pos = col_num * INCREMENT + INCREMENT // 2 - number_width // 2
+        y_pos = row_num * INCREMENT + INCREMENT // 2 - number_height // 2
         self.window.blit(number, (x_pos, y_pos))
 
     def render_numbers(self):
