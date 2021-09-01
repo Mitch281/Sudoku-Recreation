@@ -12,9 +12,9 @@ NUM_ROWS = 9
 NUM_COLUMNS = 9
 INCREMENT = int(SCREEN_LENGTH / NUM_ROWS)
 
-number_font = pygame.font.SysFont("twcencondensed", 50)
-ending_font = pygame.font.SysFont("twocencondensed", 30)
-instruction_font = pygame.font.SysFont("twocencondensed", 30)
+number_font = pygame.font.SysFont("8-Bit-Madness", 50)
+ending_font = pygame.font.SysFont("8-Bit-Madness", 30)
+instruction_font = pygame.font.SysFont("8-Bit-Madness", 30)
 
 initial_board = [[7, 8, 0, 4, 0, 0, 1, 2, 0],
                  [6, 0, 0, 0, 7, 5, 0, 0, 9],
@@ -301,7 +301,7 @@ class Screen:
         renders instruction font at bottom of screen
         :return: None
         """
-        instruction = instruction_font.render("Press spacebar to solve", False, BLACK)
+        instruction = instruction_font.render("Press spacebar to solve", True, BLACK)
         self.window.blit(instruction, (10, 560))
 
     def render_single_number(self, row_num, col_num):
