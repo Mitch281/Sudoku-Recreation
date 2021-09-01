@@ -35,26 +35,53 @@ GREEN = (106, 226, 63)
 BLUE = (38, 44, 242)
 
 
-# Handles the actual puzzle
 class Puzzle:
-    def __init__(self, initial_board, board, solvable):
+    """
+    Class that handles the logic of the puzzle
+    """
+
+    def __init__(self):
+        """
+        Initialise the object
+        :param self.initial_board: the initial board (list)
+        :param self.board: the board that is to be updated. This is a copy of the initial board (list)
+        :param self.solvable: this is a boolean that is true if the board is solvable, and false otherwise (bool)
+        """
         self.initial_board = initial_board
         self.board = board
-        self.solvable = solvable
+        self.solvable = True
 
     def make_move(self, coordinate, number):
-        x_coord = coordinate[0]
-        y_coord = coordinate[1]
+        """
+        updates the board when a number is entered
+        :param coordinate: the coordinate of the click
+        :param number: the number we want to enter into the board
+        :return: None
+        """
+        row_num = coordinate[1] // INCREMENT
+        col_num = coordinate[0] // INCREMENT
         if screen.focused and 1 <= number <= 9:
-            board[x_coord][y_coord] = number
+            board[row_num][col_num] = number
 
-    def delete_move(self, coordinate, number):
-        x_coord = coordinate[0]
-        y_coord = coordinate[1]
-        if screen.focused and 1 <= number <= 9:
-            board[x_coord][y_coord] = 0
+    def delete_move(self, coordinate):
+        """
+        deletes a number from the board
+        :param coordinate: the coordinate of the click
+        :return: None
+        """
+        row_num = coordinate[1] // INCREMENT
+        col_num = coordinate[0] // INCREMENT
+        if screen.focused:
+            board[row_num][col_num] = 0
 
     def get_block_number(self, row_number, column_number):
+        """
+        gets the block number a cell, given the row number and column number of the cell. Block numbers start
+        from top left and go left to right
+        :param row_number: row number of cell
+        :param column_number: column number of cell
+        :return:
+        """
         across_block_number = row_number // 3
         vertical_block_number = column_number // 3
         if (across_block_number, vertical_block_number) == (0, 0):
@@ -76,15 +103,22 @@ class Puzzle:
         elif (across_block_number, vertical_block_number) == (2, 2):
             return 8
 
-    # Checks if the board is completely filled.
     def check_board_filled(self):
+        """
+        checks if the board is full. If it is, return true. Otherwise, return false
+        :return: bool
+        """
         for row in board:
             if 0 in row:
                 return False
         return True
 
-    # Here, the row number is between 0 and 8.
     def check_single_row(self, row_number):
+        """
+        checks if a row satisfies the rules
+        :param row_number: row number to be check
+        :return: bool
+        """
         row = self.board[row_number]
         num_zeroes = row.count(0)
         distinct_numbers = set(row)
@@ -96,8 +130,12 @@ class Puzzle:
                 return False
         return True
 
-    # Here, the column number is between 0 and 8.
     def check_single_column(self, column_number):
+        """
+        checks if a column satisfies te rules
+        :param column_number: column number to be checked
+        :return: bool
+        """
         column = []
         for row in self.board:
             column.append(row[column_number])
@@ -111,16 +149,23 @@ class Puzzle:
                 return False
         return True
 
-    # Gets the 9 blocks of the sudoku board (each represented by a row of 9 numbers).
     def get_blocks(self):
+        """
+        gets the numbers contained in each block of the board
+        :return: list
+        """
         blocks = []
         for i in range(0, NUM_ROWS, 3):
             for j in range(0, NUM_COLUMNS, 3):
                 blocks.append(board[i][j:j + 3] + board[i + 1][j: j + 3] + board[i + 2][j: j + 3])
         return blocks
 
-    # Here, the block number is between 0 and 8. The block numbers go left to right (start left when new row).
     def check_single_block(self, block_number):
+        """
+        checks if a block satisfies rules
+        :param block_number: block number to be checked
+        :return: bool
+        """
         block = self.get_blocks()[block_number]
         num_zeroes = block.count(0)
         distinct_numbers = set(block)
@@ -133,6 +178,10 @@ class Puzzle:
         return True
 
     def check_successful(self):
+        """
+        checks if the board is successful (i.e. we have completed the game successfully)
+        :return: bool
+        """
         if not self.check_board_filled():
             return False
         for i in range(NUM_ROWS):
@@ -145,6 +194,10 @@ class Puzzle:
         return True
 
     def solve(self):
+        """
+        solves the board using the backtracking algorithm
+        :return: None
+        """
 
         # Get empty cells
         empty_cells = []
@@ -200,21 +253,38 @@ class Puzzle:
                             number = board[row_num][col_num] + 1
 
 
-# Handles GUI
 class Screen:
-    def __init__(self, window, caption, rows, columns, focused):
-        self.window = window
-        self.caption = caption
-        self.rows = rows
-        self.columns = columns
-        self.focused = focused
+    """
+    class that handles the GUI
+    :param: self.window: the screen (pygame.Surface)
+    :param: self.caption: the caption on top left of display
+    :param: self.rows: the position on the screen of each row (list)
+    :param: self.columns: the position on the screen of each column (list)
+    :param: self.focused: true if screen is focused. False otherwise (bool)
+    """
+
+    def __init__(self):
+        self.window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_LENGTH + BOTTOM_BIT))
+        self.caption = pygame.display.set_caption("Sudoku")
+        self.rows = []
+        self.columns = []
+        self.focused = False
+        self.set_rows_and_columns()
 
     def set_rows_and_columns(self):
+        """
+        set positions x-position of rows and y-position of columns
+        :return: None
+        """
         for i in range(0, SCREEN_LENGTH + 1, INCREMENT):
             self.rows.append(i)
             self.columns.append(i)
 
     def draw_lines(self):
+        """
+        draws the lines onto the board
+        :return: None
+        """
         for i in range(len(self.columns)):
             # Only necessary for every third line
             thickness = 2
@@ -227,10 +297,20 @@ class Screen:
                 pygame.draw.line(self.window, BLACK, (0, self.columns[i]), (SCREEN_WIDTH, self.columns[i]), thickness)
 
     def render_bottom_instructions(self):
+        """
+        renders instruction font at bottom of screen
+        :return: None
+        """
         instruction = instruction_font.render("Press spacebar to solve", False, BLACK)
         self.window.blit(instruction, (10, 560))
 
     def render_single_number(self, row_num, col_num):
+        """
+        renders the number onto the board
+        :param row_num: row number of board
+        :param col_num: column number of board
+        :return: None
+        """
         x_pos = (col_num * 60 + col_num * 60 + 2) / 2
         y_pos = (row_num * 60 + row_num * 60 + 2) / 2
         if not puzzle.initial_board[row_num][col_num] == 0:
@@ -240,13 +320,21 @@ class Screen:
         self.window.blit(number, (x_pos, y_pos))
 
     def render_numbers(self):
+        """
+        renders all numbers on the board
+        :return: None
+        """
         for i in range(len(puzzle.board)):
             for j in range(len(puzzle.board)):
                 if 1 <= puzzle.board[i][j] <= 9:
                     self.render_single_number(i, j)
 
-    # Highlights the box that is currently in focus in green.
     def highlight_box(self, click_position):
+        """
+        highlights the cell currently in focus
+        :param click_position: the coordinate of the click
+        :return: None
+        """
         x_pos = click_position[0]
         y_pos = click_position[1]
         x_remainder = x_pos % INCREMENT
@@ -255,11 +343,20 @@ class Screen:
         top_line = y_pos - y_remainder
         pygame.draw.rect(self.window, GREEN, (left_line, top_line, INCREMENT, INCREMENT), 2)
 
-    # Highlights the box currently being solved (used for backtracking algorithm).
     def solve_highlight_box(self, row_num, col_num):
+        """
+        highlights the cell currently being solved (used for backtracking algorithm)
+        :param row_num: the row number of the cell ot be highlighted
+        :param col_num: the column number of the cell to be highlighted
+        :return: None
+        """
         pygame.draw.rect(self.window, GREEN, (col_num * INCREMENT, row_num * INCREMENT, INCREMENT, INCREMENT), 2)
 
     def render_ending_message(self):
+        """
+        renders the ending message depending on if you were successful or not
+        :return: None
+        """
         if puzzle.check_successful():
             message = ending_font.render("Success!", 1, BLACK)
             self.window.blit(message, (440, 560))
@@ -268,6 +365,11 @@ class Screen:
             self.window.blit(message, (440, 560))
 
     def set_screen_focused(self, click_pos):
+        """
+        checks if we need to focus the screen based on if we clicked a cell or not
+        :param click_pos: coordinate of click
+        :return: None
+        """
         # A click that is not on a line
         if (click_pos[0] % 60 != 0) and (click_pos[1] % 60 != 0):
             # The index of the board to be updated.
@@ -281,10 +383,8 @@ class Screen:
                 screen.focused = False
 
 
-puzzle = Puzzle(initial_board, board, True)
-screen = Screen(pygame.display.set_mode((SCREEN_WIDTH, SCREEN_LENGTH + BOTTOM_BIT)),
-                pygame.display.set_caption("Sudoku"), [], [], False)
-screen.set_rows_and_columns()
+puzzle = Puzzle()
+screen = Screen()
 
 
 def main():
@@ -306,13 +406,10 @@ def main():
                     # Checks if the key pressed is a number.
                     if 48 <= event.key <= 57:
                         key_pressed = event.key - 48
-                        index = (click_pos[1] // INCREMENT, click_pos[0] // INCREMENT)
-                        puzzle.make_move(index, key_pressed)
+                        puzzle.make_move(click_pos, key_pressed)
                         screen.focused = False
                     elif event.key == pygame.K_BACKSPACE:
-                        index = (click_pos[1] // INCREMENT, click_pos[0] // INCREMENT)
-                        number = puzzle.board[index[0]][index[1]]
-                        puzzle.delete_move(index, number)
+                        puzzle.delete_move(click_pos)
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
