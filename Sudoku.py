@@ -339,10 +339,8 @@ class Screen:
         """
         x_pos = click_position[0]
         y_pos = click_position[1]
-        x_remainder = x_pos % INCREMENT
-        y_remainder = y_pos % INCREMENT
-        left_line = x_pos - x_remainder
-        top_line = y_pos - y_remainder
+        left_line = x_pos // INCREMENT
+        top_line = y_pos // INCREMENT
         pygame.draw.rect(self.window, GREEN, (left_line, top_line, INCREMENT, INCREMENT), 2)
 
     def solve_highlight_box(self, row_num, col_num):

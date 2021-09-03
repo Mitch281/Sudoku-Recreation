@@ -51,6 +51,7 @@
   </component>
   <component name="RunManager" selected="Python.Sudoku">
     <configuration name="Sudoku" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="Sudoku" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -61,7 +62,6 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Sudoku.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -115,7 +115,6 @@
     </configuration>
     <list>
       <item itemvalue="Python.Sudoku" />
-      <item itemvalue="Python.main" />
       <item itemvalue="Python.scratch_5" />
     </list>
     <recent_temporary>
