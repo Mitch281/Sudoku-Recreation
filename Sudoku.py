@@ -424,10 +424,8 @@ def main():
         if not puzzle.solvable:
             message1 = ending_font.render("The puzzle cannot be", 1, BLACK)
             message2 = ending_font.render("solved in its current form", 1, BLACK)
-            message3 = ending_font.render("(using backtracking algorithm", 1, BLACK)
-            screen.window.blit(message1, (260, 540))
-            screen.window.blit(message2, (260, 560))
-            screen.window.blit(message3, (260, 580))
+            screen.window.blit(message1, (260, 550))
+            screen.window.blit(message2, (260, 570))
 
         pygame.display.update()
 
