@@ -12,7 +12,6 @@ https://imgur.com/a/TD5vgYf
     cd Sudoku-Recreation
   </code>
 </pre>
-Link: https://pypi.org/project/pipenv/
 <h3>Install pygame</h3>
 <pre>
   <code>
