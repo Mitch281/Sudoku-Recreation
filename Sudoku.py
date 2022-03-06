@@ -209,7 +209,7 @@ class Puzzle:
         index = 0
         number = 1
         while not self.check_successful():
-            time.sleep(0.1)
+            time.sleep(0.075)
             row_num = empty_cells[index][0]
             col_num = empty_cells[index][1]
             block_num = self.get_block_number(row_num, col_num)
