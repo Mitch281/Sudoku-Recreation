@@ -3,7 +3,8 @@ This repository is a recreation of the game sudoku written in python using the p
 <h2>Demo</h2>
 https://imgur.com/a/TD5vgYf
 <h2>Installation</h2>
-<p>First, make sure you have python installed on your machine. Make sure you also install pip when you install python. Link: https://www.python.org/downloads/
+<p>First, make sure you have python installed on your machine. Make sure you also install pip when you install python. Link: https://www.python.org/downloads/</p>
+<p>Also install pipenv: https://pypi.org/project/pipenv/</p>
 <h3>Clone the repository:</h3>
 <pre>
   <code>
@@ -11,7 +12,6 @@ https://imgur.com/a/TD5vgYf
     cd Sudoku-Recreation
   </code>
 </pre>
-<h3>Install pipenv</h3>
 Link: https://pypi.org/project/pipenv/
 <h3>Install pygame</h3>
 <pre>
