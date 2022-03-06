@@ -19,7 +19,7 @@ Link: https://pypi.org/project/pipenv/
       pipenv install pygame
     </code>
 </pre>
-Now run the program:
+<h3>Now run the program:</h3>
 <pre>
   <code>
       Sudoku.py
