@@ -12,9 +12,10 @@ https://imgur.com/a/TD5vgYf
     cd Sudoku-Recreation
   </code>
 </pre>
-<h3>Install pygame</h3>
+<h3>Start a new virtual environment and install pygame</h3>
 <pre>
   <code>
+      pipenv shell
       pipenv install pygame
     </code>
 </pre>
