@@ -11,6 +11,7 @@ BOTTOM_BIT = 60
 NUM_ROWS = 9
 NUM_COLUMNS = 9
 INCREMENT = int(SCREEN_LENGTH / NUM_ROWS)
+TIME_BETWEEN_ANIMATION = 0.075
 
 number_font = pygame.font.SysFont("8-Bit-Madness", 50)
 ending_font = pygame.font.SysFont("8-Bit-Madness", 30)
@@ -18,13 +19,13 @@ instruction_font = pygame.font.SysFont("8-Bit-Madness", 30)
 
 initial_board = [[7, 8, 0, 4, 0, 0, 1, 2, 0],
                  [6, 0, 0, 0, 7, 5, 0, 0, 9],
-                 [0, 0, 0, 6, 0, 1, 0, 7, 8],
-                 [0, 0, 7, 0, 4, 0, 2, 6, 0],
-                 [0, 0, 1, 0, 5, 0, 9, 3, 0],
-                 [9, 0, 4, 0, 6, 0, 0, 0, 5],
+                 [0, 9, 0, 6, 0, 1, 0, 7, 8],
+                 [0, 5, 7, 0, 4, 0, 2, 6, 0],
+                 [2, 0, 1, 0, 5, 0, 9, 3, 0],
+                 [9, 0, 4, 1, 6, 0, 0, 0, 5],
                  [0, 7, 0, 3, 0, 0, 0, 1, 2],
                  [1, 2, 0, 0, 0, 7, 4, 0, 0],
-                 [0, 4, 9, 2, 0, 6, 0, 0, 7]]
+                 [0, 4, 9, 2, 0, 6, 0, 5, 7]]
 # Creating a clone of initial board. This is the board to be updated throughout the game.
 board = copy.deepcopy(initial_board)
 
@@ -209,7 +210,7 @@ class Puzzle:
         index = 0
         number = 1
         while not self.check_successful():
-            time.sleep(0.075)
+            time.sleep(TIME_BETWEEN_ANIMATION)
             row_num = empty_cells[index][0]
             col_num = empty_cells[index][1]
             block_num = self.get_block_number(row_num, col_num)
@@ -264,7 +265,9 @@ class Screen:
     """
 
     def __init__(self):
-        self.window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_LENGTH + BOTTOM_BIT))
+        # We add 1 to screen width here to account for thickness of last vertical line (the rightmost vertical line). Without adding 
+        # 1 (i.e. the thickness of the line), the line is cut off.
+        self.window = pygame.display.set_mode((SCREEN_WIDTH + 1, SCREEN_LENGTH + BOTTOM_BIT))
         self.caption = pygame.display.set_caption("Sudoku")
         self.rows = []
         self.columns = []
